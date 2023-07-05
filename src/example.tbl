@@ -6,3 +6,4 @@ id: color
 2: Greenish Blue
 3: Purplish Pink
 4-6: Brownish Grey
+7: Light {{color}}

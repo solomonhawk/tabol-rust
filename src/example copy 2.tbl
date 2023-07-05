@@ -1,0 +1,47 @@
+---
+title: Mono Races
+id: mono_race
+---
+1: Human
+2: Elf
+3: Dwarf
+4: Halfling
+5: Gnome
+
+---
+title: Races
+id: race
+---
+1: {{mono_race}}
+2: Half-{{mono_race}}
+
+---
+title: Classes
+id: class
+---
+1: Fighter
+2: Wizard
+3: Cleric
+4: Rogue
+5: Ranger
+6: Paladin
+7: Druid
+8: Monk
+9: Barbarian
+10: Bard
+11: Sorcerer
+12: Warlock
+
+---
+title: Alignment
+id: alignment
+---
+1: Lawful Good
+2: Neutral Good
+3: Chaotic Good
+4: Lawful Neutral
+5: Neutral
+6: Chaotic Neutral
+7: Lawful Evil
+8: Neutral Evil
+9: Chaotic Evil

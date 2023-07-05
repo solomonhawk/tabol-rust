@@ -48,47 +48,31 @@ impl fmt::Display for TableError {
 
 #[derive(Debug)]
 pub struct Tabol {
-    tables: HashMap<String, Table>,
+    table_map: HashMap<String, Table>,
 }
 
 impl Tabol {
-    pub fn new(table_definitions: Vec<String>) -> Result<Self, TableError> {
-        let mut tables = HashMap::new();
+    pub fn new(table_definitions: &str) -> Result<Self, TableError> {
+        let mut table_map = HashMap::new();
+        let (_, tables) = parser::parse_tables(table_definitions).map_err(|e| {
+            // TODO: better error handling, convert nom errors to TableError
+            // nom has some pretty bad errors, maybe use nom-supreme?
+            TableError::ParseError(format!("failed to parse table definitions: {}", e))
+        })?;
 
-        // temporarily hard-coded since parsing isn't implemented yet
-        tables.insert(
-            "color".to_string(),
-            Table {
-                title: "Color".to_string(),
-                id: "color".to_string(),
-                rules: vec![
-                    Rule {
-                        raw: "Redish Orange".to_string(),
-                        parts: vec![RuleInst::Literal("Redish Orange".to_string())],
-                    },
-                    Rule {
-                        raw: "Greenish Blue".to_string(),
-                        parts: vec![RuleInst::Literal("Greenish Blue".to_string())],
-                    },
-                    Rule {
-                        raw: "Purplish Pink".to_string(),
-                        parts: vec![
-                            RuleInst::Literal("Purplish Pink (".to_string()),
-                            RuleInst::Interpolation("color".to_string()),
-                            RuleInst::Literal(")".to_string()),
-                        ],
-                    },
-                ],
-                choices: vec![0, 1, 2],
-            },
-        );
+        for table in tables {
+            table_map.insert(table.id.clone(), table);
+        }
 
-        // Err(TableError::ParseError("not implemented".to_string()))
-        Ok(Self { tables })
+        Ok(Self { table_map })
+    }
+
+    pub fn table_ids(&self) -> Vec<&str> {
+        self.table_map.keys().map(|s| s.as_str()).collect()
     }
 
     pub fn gen(&self, id: &str) -> Result<String, TableError> {
-        if let Some(table) = self.tables.get(id) {
+        if let Some(table) = self.table_map.get(id) {
             return table.gen(&self);
         }
 
@@ -99,7 +83,7 @@ impl Tabol {
     }
 
     pub fn gen_many(&self, id: &str, count: usize) -> Result<Vec<String>, TableError> {
-        if let Some(table) = self.tables.get(id) {
+        if let Some(table) = self.table_map.get(id) {
             let mut results = Vec::with_capacity(count);
 
             for _ in 0..count {
@@ -143,13 +127,6 @@ pub struct Rule {
 }
 
 impl Rule {
-    pub fn new(raw: String) -> Result<Self, TableError> {
-        let (_, parts) = parser::parse_rule(&raw).unwrap();
-
-        // Err(TableError::ParseError("not implemented".to_string()))
-        Ok(Rule { raw, parts })
-    }
-
     pub fn resolve(&self, tables: &Tabol) -> Result<String, TableError> {
         let resolved: Result<Vec<String>, TableError> = self
             .parts
@@ -173,11 +150,17 @@ pub enum RuleInst {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let table_def = include_str!("example.tbl");
-    let table_defs = vec![table_def.to_string()];
+    // let table_defs = vec![table_def.to_string()];
 
-    let tabol = match Tabol::new(table_defs) {
-        Ok(tabol) => tabol,
+    let tabol = match Tabol::new(table_def.trim()) {
         Err(error) => return Err(Box::new(error)),
+        Ok(tabol) => {
+            println!("{:#?}", tabol);
+            println!("Tabol Ids: {:#?}", tabol.table_ids());
+            // println!("{:#?}", tabol.gen("class"));
+            // println!("{:#?}", tabol.gen("race"));
+            // println!("{:#?}", tabol.gen("alignment"));
+        }
     };
 
     // match tabol.gen("color") {
@@ -190,10 +173,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     //     Err(error) => return Err(error.to_string()),
     // }
 
-    let (remaining, result) = parser::parse_tables(table_def)?;
+    // let (_, result) = parser::parse_tables(table_def)?;
 
-    println!("Remaining: '{:?}'", remaining);
-    println!("Result: '{:#?}'", result);
     // println!("{:?}", parser::parse_one_rule("2-4: lol")?);
     Ok(())
 }

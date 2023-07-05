@@ -2,12 +2,12 @@
 
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag, take_till1, take_until, take_while1},
+    bytes::complete::{is_not, tag, take_till1, take_until, take_while, take_while1},
     character::{
-        complete::{alphanumeric1, anychar, digit1, line_ending, space0},
+        complete::{alphanumeric1, anychar, digit1, line_ending, not_line_ending, space0},
         is_alphabetic, is_space,
     },
-    combinator::{all_consuming, eof, map, map_res},
+    combinator::{all_consuming, consumed, eof, map, map_res, recognize},
     error::make_error,
     multi::{fold_many1, many1, many_till},
     sequence::{delimited, pair, separated_pair, terminated, tuple},
@@ -29,8 +29,12 @@ pub struct ParsedRule {
 
 // --------- Tabol ---------
 pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
-    let (remaining, (frontmatter, rules)) =
-        all_consuming(tuple((parse_frontmatter, parse_rules)))(input)?;
+    let (remaining, tables) = all_consuming(many1(table))(input)?;
+    Ok((remaining, tables))
+}
+
+fn table(input: &str) -> IResult<&str, Table> {
+    let (remaining, (frontmatter, rules, _)) = tuple((frontmatter, rules, whitespace))(input)?;
 
     let mut choices = vec![];
     let rules = rules
@@ -49,12 +53,12 @@ pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
 
     Ok((
         remaining,
-        vec![Table {
+        Table {
             title: frontmatter.title,
             id: frontmatter.id,
             rules,
             choices,
-        }],
+        },
     ))
 }
 
@@ -63,11 +67,11 @@ struct Frontmatter {
     pub id: String,
 }
 
-fn parse_frontmatter(input: &str) -> IResult<&str, Frontmatter> {
+fn frontmatter(input: &str) -> IResult<&str, Frontmatter> {
     let (remaining, attrs) = delimited(
         pair(tag("---"), line_ending),
         fold_many1(
-            parse_frontmatter_attr,
+            frontmatter_attr,
             HashMap::new,
             |mut acc: HashMap<_, _>, (k, v)| {
                 acc.insert(k, v.to_string());
@@ -97,62 +101,64 @@ fn parse_frontmatter(input: &str) -> IResult<&str, Frontmatter> {
     ))
 }
 
-fn parse_frontmatter_attr(input: &str) -> IResult<&str, (&str, &str)> {
+fn frontmatter_attr(input: &str) -> IResult<&str, (&str, &str)> {
     terminated(
-        separated_pair(alphanumeric1, tag(": "), alphanumeric1),
+        separated_pair(alphanumeric1, tag(": "), not_line_ending),
         line_ending,
     )(input)
 }
 
-/**
- * input:
- *    1: foo
- *    2-5: bar
- *    6-10: baz
- */
-fn parse_rules(input: &str) -> IResult<&str, Vec<ParsedRule>> {
-    many1(terminated(parse_one_rule, alt((eof, line_ending))))(input)
+fn rules(input: &str) -> IResult<&str, Vec<ParsedRule>> {
+    many1(terminated(one_rule_entry, alt((line_ending, eof))))(input)
 }
 
-pub fn parse_one_rule(input: &str) -> IResult<&str, ParsedRule> {
+fn one_rule_entry(input: &str) -> IResult<&str, ParsedRule> {
     map_res(
-        separated_pair(parse_indices, tag(": "), words),
-        |(indices, raw)| {
-            let rule = Rule::new(raw.to_string()).unwrap();
-            // let rule = Rule::new(raw.to_string())
-            //     .map_err(|_| nom::error::Error::new(input, nom::error::ErrorKind::Many1))?;
-            // .map_err(|err| nom::error::Error::new(input, nom::error::ErrorKind::MapRes))?;
-
+        separated_pair(rule_indices, tag(": "), rule),
+        |(indices, rule)| {
+            // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
             Ok::<ParsedRule, nom::error::Error<nom::error::ErrorKind>>(ParsedRule { indices, rule })
         },
     )(input)
 }
 
-fn parse_indices(input: &str) -> IResult<&str, Indices> {
+fn rule_indices(input: &str) -> IResult<&str, Indices> {
     alt((
-        separated_pair(parse_int, tag("-"), parse_int),
-        map_res(parse_int, |n: usize| {
-            Ok::<Indices, nom::error::Error<nom::error::ErrorKind>>((n, n)) // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
+        separated_pair(int, tag("-"), int),
+        map_res(int, |n: usize| {
+            // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
+            Ok::<Indices, nom::error::Error<nom::error::ErrorKind>>((n, n))
         }),
     ))(input)
 }
 
-fn parse_int(input: &str) -> IResult<&str, usize> {
+fn int(input: &str) -> IResult<&str, usize> {
     map_res(digit1, |s: &str| str::parse::<usize>(s))(input)
 }
 
 // --------- Rule ---------
-pub fn parse_rule(input: &str) -> IResult<&str, Vec<RuleInst>> {
-    all_consuming(many1(alt((parse_rule_literal, parse_rule_interpolation))))(input)
+pub fn rule(input: &str) -> IResult<&str, Rule> {
+    let (remaining, (raw, parts)) =
+        consumed(many1(alt((rule_literal, rule_interpolation))))(input)?;
+
+    Ok((
+        remaining,
+        Rule {
+            raw: raw.to_string(),
+            parts,
+        },
+    ))
 }
 
-fn parse_rule_literal(input: &str) -> IResult<&str, RuleInst> {
+fn rule_literal(input: &str) -> IResult<&str, RuleInst> {
+    println!("rule_literal: {}", input);
     map(alt((take_until("{{"), words)), |s: &str| {
         RuleInst::Literal(s.to_string())
     })(input)
 }
 
-fn parse_rule_interpolation(input: &str) -> IResult<&str, RuleInst> {
+fn rule_interpolation(input: &str) -> IResult<&str, RuleInst> {
+    println!("rule_interpolation: {}", input);
     map(delimited(tag("{{"), ident, tag("}}")), |s: &str| {
         RuleInst::Interpolation(s.to_string())
     })(input)
@@ -164,4 +170,8 @@ fn words(input: &str) -> IResult<&str, &str> {
 
 fn ident(input: &str) -> IResult<&str, &str> {
     take_while1(|c: char| c.is_alphanumeric() || c == '_')(input)
+}
+
+fn whitespace(input: &str) -> IResult<&str, &str> {
+    take_while(|c: char| c.is_whitespace())(input)
 }
