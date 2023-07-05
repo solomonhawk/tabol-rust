@@ -1,25 +1,8 @@
-// a grammar for defining tables
-// a web application for using and editing tables
-// a cli for using tables
-
-// parameters
-// remapping probabilities?
-
-// build things up starting with 0-parameter tables
-// - geography: continents, regions, cities, towns
-
-// const tabol = parse(rules) => Result<Table, ParseError> (throws in wasm)
-
-// tabol.gen('race') => 'Elf'
-// tabol.gen('race', 3) => ['Elf', 'Human', 'Dwarf']
-// tabol.gen('wrong') => TypeError 'wrong' is not a valid table name
-
-#![allow(unused)]
 mod parser;
 
 use rand::prelude::*;
 use std::error::Error;
-use std::{collections::HashMap, fmt, vec};
+use std::{collections::HashMap, fmt};
 
 type TableId = String;
 
@@ -102,10 +85,10 @@ impl Tabol {
 
 #[derive(Debug)]
 pub struct Table {
-    title: String,
-    id: TableId,
-    rules: Vec<Rule>,
-    choices: Vec<usize>, // indices into rules
+    pub title: String,
+    pub id: TableId,
+    pub rules: Vec<Rule>,
+    pub choices: Vec<usize>, // indices into rules
 }
 
 impl Table {
@@ -122,8 +105,8 @@ impl Table {
 
 #[derive(Debug, Clone)]
 pub struct Rule {
-    raw: String,
-    parts: Vec<RuleInst>,
+    pub raw: String,
+    pub parts: Vec<RuleInst>,
 }
 
 impl Rule {
@@ -149,32 +132,16 @@ pub enum RuleInst {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let table_def = include_str!("example.tbl");
-    // let table_defs = vec![table_def.to_string()];
+    let table_def = include_str!("potion.tbl");
 
-    let tabol = match Tabol::new(table_def.trim()) {
+    match Tabol::new(table_def.trim()) {
         Err(error) => return Err(Box::new(error)),
         Ok(tabol) => {
             println!("{:#?}", tabol);
             println!("Tabol Ids: {:#?}", tabol.table_ids());
-            // println!("{:#?}", tabol.gen("class"));
-            // println!("{:#?}", tabol.gen("race"));
-            // println!("{:#?}", tabol.gen("alignment"));
+            println!("{:#?}", tabol.gen_many("potion", 10));
         }
     };
 
-    // match tabol.gen("color") {
-    //     Ok(color) => println!("{}", color),
-    //     Err(error) => return Err(error.to_string()),
-    // }
-
-    // match tabol.gen_many("color", 10) {
-    //     Ok(colors) => println!("{:?}", colors),
-    //     Err(error) => return Err(error.to_string()),
-    // }
-
-    // let (_, result) = parser::parse_tables(table_def)?;
-
-    // println!("{:?}", parser::parse_one_rule("2-4: lol")?);
     Ok(())
 }

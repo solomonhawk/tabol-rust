@@ -1,0 +1,151 @@
+---
+title: Potion
+id: potion
+---
+1: A {{quality}} {{color}} {{material}} {{containment}} a {{shape}} {{container}}. It smells like {{smell}} and {{potion_attribute}}.
+
+---
+title: Containment
+id: containment
+---
+1: contained within
+2: trapped in
+3: sloshing around in
+4: held by
+5: delicately stirring within
+6: bubbling within
+7: floating in
+8: suspended in
+9: swirling within
+10: resting in
+
+---
+title: Quality
+id: quality
+---
+1: fresh
+2: ripe
+3: stale
+4: brand new
+5: questionable
+6: vibrant
+7: musty
+8: ancient
+9: old
+10: whimsical
+
+---
+title: Color
+id: color
+---
+1: red
+2: orange
+3: yellow
+4: green
+5: blue
+6: purple
+7: pink
+8: black
+9: white
+10: multi-colored
+11: chromatic
+12: {{color}}-{{color}}
+
+---
+title: Material
+id: material
+---
+1-5: liquid
+6-7: gelatin
+8: goo
+9: sludge
+
+---
+title: Shape
+id: shape
+---
+1: round
+2: rectangular
+3: tear-shaped
+4: circular
+5: triangular
+6: long and narrow
+7: tall
+8: double-spouted
+9: thin-rimmed
+
+---
+title: Container
+id: container
+---
+1: vial
+2: bottle
+3: flask
+4: jar
+5: jug
+6: decanter
+7: beaker
+9: bowl
+
+---
+title: Smell
+id: smell
+---
+1: roses
+2: lavender
+3: a foot
+4: hay
+5: a fresh apple pie
+6: moldy bread
+7: starlight
+8: happiness
+9: family
+10: a summer breeze
+11: coal
+12: boiled sweets
+13: death
+14: evil
+15: sulphur
+16: regret
+17: grain alcohol
+
+---
+title: Attribute
+id: potion_attribute
+---
+1: glows with a dim {{color}} light
+2: it shimmers and swirls curiously
+3: reminds you of someone you used to know
+4: it's warm to the touch
+5: it's cold to the touch
+6: it roils and bubbles energetically
+7: it sparkles with {{color}} flecks
+8: it gives off a {{color}} smoke when agitated
+9: it's viscous and thick
+10: makes you feel {{emotion}}
+11: it's a little bit sticky
+12: it pops and crackles
+13: makes you uneasy when you look at it
+14: it seems to be calling you to drink it
+15: it longs to be consumed
+16: even though you're confident, you're not sure you want to drink it
+17: it's troubling to look at
+18: it's a little bit slimy
+19: resembles a failed science experiment
+
+---
+title: Emotion
+id: emotion
+---
+1: happy
+2: sad
+3: angry
+4: confused
+5: scared
+6: excited
+7: sleepy
+8: hungry
+9: thirsty
+10: lonely
+11: loved
+12: hated

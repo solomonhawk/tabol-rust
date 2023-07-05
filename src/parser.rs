@@ -1,5 +1,3 @@
-// #![allow(unused)]
-
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag, take_till1, take_until, take_while, take_while1},
@@ -7,7 +5,7 @@ use nom::{
         complete::{alphanumeric1, anychar, digit1, line_ending, not_line_ending, space0},
         is_alphabetic, is_space,
     },
-    combinator::{all_consuming, consumed, eof, map, map_res, recognize},
+    combinator::{all_consuming, consumed, eof, map, map_parser, map_res, opt, recognize},
     error::make_error,
     multi::{fold_many1, many1, many_till},
     sequence::{delimited, pair, separated_pair, terminated, tuple},
@@ -109,12 +107,16 @@ fn frontmatter_attr(input: &str) -> IResult<&str, (&str, &str)> {
 }
 
 fn rules(input: &str) -> IResult<&str, Vec<ParsedRule>> {
-    many1(terminated(one_rule_entry, alt((line_ending, eof))))(input)
+    many1(terminated(
+        map_parser(not_line_ending, one_rule_entry),
+        alt((eof, line_ending)),
+    ))(input)
 }
 
 fn one_rule_entry(input: &str) -> IResult<&str, ParsedRule> {
     map_res(
-        separated_pair(rule_indices, tag(": "), rule),
+        // maybe don't allow both : and .? it got annoying while testing
+        separated_pair(rule_indices, alt((tag(". "), tag(": "))), rule),
         |(indices, rule)| {
             // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
             Ok::<ParsedRule, nom::error::Error<nom::error::ErrorKind>>(ParsedRule { indices, rule })
@@ -138,8 +140,8 @@ fn int(input: &str) -> IResult<&str, usize> {
 
 // --------- Rule ---------
 pub fn rule(input: &str) -> IResult<&str, Rule> {
-    let (remaining, (raw, parts)) =
-        consumed(many1(alt((rule_literal, rule_interpolation))))(input)?;
+    let (remaining, (raw, (parts, _))) =
+        consumed(many_till(alt((rule_interpolation, rule_literal)), eof))(input)?;
 
     Ok((
         remaining,
@@ -151,21 +153,15 @@ pub fn rule(input: &str) -> IResult<&str, Rule> {
 }
 
 fn rule_literal(input: &str) -> IResult<&str, RuleInst> {
-    println!("rule_literal: {}", input);
-    map(alt((take_until("{{"), words)), |s: &str| {
+    map(alt((take_until("{{"), not_line_ending)), |s: &str| {
         RuleInst::Literal(s.to_string())
     })(input)
 }
 
 fn rule_interpolation(input: &str) -> IResult<&str, RuleInst> {
-    println!("rule_interpolation: {}", input);
     map(delimited(tag("{{"), ident, tag("}}")), |s: &str| {
         RuleInst::Interpolation(s.to_string())
     })(input)
-}
-
-fn words(input: &str) -> IResult<&str, &str> {
-    take_while1(|c: char| c.is_alphanumeric() || c == ' ')(input)
 }
 
 fn ident(input: &str) -> IResult<&str, &str> {

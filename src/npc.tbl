@@ -1,0 +1,204 @@
+---
+title: Mono Races
+id: mono_race
+---
+1: Human
+2: Elf
+3: Dwarf
+4: Halfling
+5: Gnome
+
+---
+title: Races
+id: race
+---
+1: {{mono_race}}
+2: Half-{{mono_race}}
+
+---
+title: Classes
+id: class
+---
+1: Fighter
+2: Wizard
+3: Cleric
+4: Rogue
+5: Ranger
+6: Paladin
+7: Druid
+8: Monk
+9: Barbarian
+10: Bard
+11: Sorcerer
+12: Warlock
+
+---
+title: Alignment
+id: alignment
+---
+1: Lawful Good
+2: Neutral Good
+3: Chaotic Good
+4: Lawful Neutral
+5: Neutral
+6: Chaotic Neutral
+7: Lawful Evil
+8: Neutral Evil
+9: Chaotic Evil
+
+---
+title: Full Names
+id: full_name
+---
+1: {{first_name}} {{last_name}}
+
+---
+title: First Names
+id: first_name
+---
+1: Frodo
+2: Bilbo
+3: Sam
+4: Gandalf
+5: Merry
+6: Pippin
+7: Aragorn
+8: Legolas
+9: Gimli
+10: Boromir
+
+---
+title: Last Names
+id: last_name
+---
+1: Baggins
+2: the Grey
+3: Gamgee
+4: Took
+5: Brandybuck
+6: Proudfoot
+7: Elessar
+8: Greenleaf
+9: Oakenshield
+10: Hornblower
+
+---
+title: Birthplace
+id: birthplace
+---
+1-5: a small {{economic_pursuit}} village outside {{city}}
+6-10: a small {{geographic_feature}} city
+11-13: a large {{geographic_feature}} city
+14-15: the wilds outside {{city}}
+
+---
+title: City
+id: city
+---
+1: Waterdeep
+2: Neverwinter
+3: Baldur's Gate
+4: Daggerford
+5: Silverymoon
+6: Luskan
+7: Mirabar
+8: Longsaddle
+9: Triboar
+10: Yartar
+
+---
+title: Geographic Features
+id: geographic_feature
+---
+1: coastal
+2: mountain
+3: forest
+4: desert
+5: swamp
+6: jungle
+7: tundra
+8: island
+
+---
+title: Economic Pursuits
+id: economic_pursuit
+---
+1: farming
+2: fishing
+3: mining
+4: logging
+5: hunting
+6: herding
+7: steelworking
+8: merchant
+
+---
+title: Reputation
+id: reputation
+---
+1: well-liked
+2: reliable
+3: sketchy
+4: tolerated
+5: infamous
+6: famous
+7: untrustworthy
+8: criminal
+
+---
+title: Professions
+id: profession
+---
+1: shoe maker
+2: blacksmith
+3: carpenter
+4: tailor
+5: farmer
+6: fisherman
+7: miner
+8: logger
+9: hunter
+10: enchanter
+11: leatherworker
+12: mage
+13: priest
+14: acolye
+15: musician
+16: artist
+17: merchant
+18: innkeeper
+19: barkeep
+20: cook
+21: baker
+22: butcher
+23: guard
+24: soldier
+25: sailor
+26: pirate
+27: thief
+28: assassin
+29: bounty hunter
+30: mercenary
+31: performer
+32: entertainer
+33: gambler
+34: beggar
+35: banker
+
+---
+title: Skill Levels
+id: skill_level
+---
+1-5: novice
+6-12: apprentice
+13-18: journeyman
+19-22: expert
+23-24: master
+25: grandmaster
+
+---
+title: NPC
+id: npc
+---
+1: {{full_name}} is a {{alignment}} {{race}} {{class}} originally from {{birthplace}}, known as a(n) {{reputation}} {{skill_level}} {{profession}}.
+2: {{full_name}} is a commoner from {{birthplace}}, known as a(n) {{skill_level}} {{profession}}.
