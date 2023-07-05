@@ -17,15 +17,30 @@ id: color
 title: Shapes
 id: shape
 ---
-1. Circle
-2. Square
-3. Triangle
+1: Circle
+2: Square
+3: Triangle
 
 ---
 title: Colored Shapes
 id: colored_shape
 ---
-1. {{color}} {{shape}}
+1: {{color}} {{shape}}
+```
+
+Entry frequency can be adjusted by specifying a range instead of a single number as the label:
+
+```
+---
+title: Variable Frequency
+id: variable_frequency
+---
+1-50: common
+51-75: uncommon
+76-85: rare
+86-93: epic
+94-99: legendary
+100: mythic
 ```
 
 ## TODO
