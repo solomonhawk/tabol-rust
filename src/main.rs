@@ -137,9 +137,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     match Tabol::new(table_def.trim()) {
         Err(error) => return Err(Box::new(error)),
         Ok(tabol) => {
-            println!("{:#?}", tabol);
-            println!("Tabol Ids: {:#?}", tabol.table_ids());
-            println!("{:#?}", tabol.gen_many("potion", 10));
+            println!("{:#?}", tabol.gen_many("potion", 20));
         }
     };
 
