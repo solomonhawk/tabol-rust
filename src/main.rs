@@ -15,9 +15,11 @@
 // tabol.gen('wrong') => TypeError 'wrong' is not a valid table name
 
 #![allow(unused)]
+mod parser;
 
 use rand::prelude::*;
-use std::{collections::HashMap, error::Error, fmt};
+use std::error::Error;
+use std::{collections::HashMap, fmt, vec};
 
 type TableId = String;
 
@@ -26,6 +28,8 @@ pub enum TableError {
     ParseError(String),
     CallError(String),
 }
+
+impl Error for TableError {}
 
 impl fmt::Display for TableError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -42,7 +46,8 @@ impl fmt::Display for TableError {
     }
 }
 
-struct Tabol {
+#[derive(Debug)]
+pub struct Tabol {
     tables: HashMap<String, Table>,
 }
 
@@ -111,7 +116,8 @@ impl Tabol {
     }
 }
 
-struct Table {
+#[derive(Debug)]
+pub struct Table {
     title: String,
     id: TableId,
     rules: Vec<Rule>,
@@ -130,14 +136,18 @@ impl Table {
     }
 }
 
-struct Rule {
+#[derive(Debug, Clone)]
+pub struct Rule {
     raw: String,
     parts: Vec<RuleInst>,
 }
 
 impl Rule {
-    pub fn new(&mut self) -> Result<Self, TableError> {
-        Err(TableError::ParseError("not implemented".to_string()))
+    pub fn new(raw: String) -> Result<Self, TableError> {
+        let (_, parts) = parser::parse_rule(&raw).unwrap();
+
+        // Err(TableError::ParseError("not implemented".to_string()))
+        Ok(Rule { raw, parts })
     }
 
     pub fn resolve(&self, tables: &Tabol) -> Result<String, TableError> {
@@ -155,19 +165,19 @@ impl Rule {
     }
 }
 
-#[derive(Clone)]
-enum RuleInst {
+#[derive(Debug, Clone)]
+pub enum RuleInst {
     Literal(String),
     Interpolation(TableId), // parameters?
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<(), Box<dyn Error>> {
     let table_def = include_str!("example.tbl");
     let table_defs = vec![table_def.to_string()];
 
     let tabol = match Tabol::new(table_defs) {
         Ok(tabol) => tabol,
-        Err(error) => return Err(error.to_string()),
+        Err(error) => return Err(Box::new(error)),
     };
 
     // match tabol.gen("color") {
@@ -175,10 +185,15 @@ fn main() -> Result<(), String> {
     //     Err(error) => return Err(error.to_string()),
     // }
 
-    match tabol.gen_many("color", 10) {
-        Ok(colors) => println!("{:?}", colors),
-        Err(error) => return Err(error.to_string()),
-    }
+    // match tabol.gen_many("color", 10) {
+    //     Ok(colors) => println!("{:?}", colors),
+    //     Err(error) => return Err(error.to_string()),
+    // }
 
+    let (remaining, result) = parser::parse_tables(table_def)?;
+
+    println!("Remaining: '{:?}'", remaining);
+    println!("Result: '{:#?}'", result);
+    // println!("{:?}", parser::parse_one_rule("2-4: lol")?);
     Ok(())
 }
