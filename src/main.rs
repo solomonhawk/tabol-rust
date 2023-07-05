@@ -48,8 +48,34 @@ struct Tabol {
 
 impl Tabol {
     pub fn new(table_definitions: Vec<String>) -> Result<Self, TableError> {
-        // unimplemented!()
-        Err(TableError::ParseError("not implemented".to_string()))
+        let mut tables = HashMap::new();
+
+        // temporarily hard-coded since parsing isn't implemented yet
+        tables.insert(
+            "color".to_string(),
+            Table {
+                title: "Color".to_string(),
+                id: "color".to_string(),
+                rules: vec![
+                    Rule {
+                        raw: "Redish Orange".to_string(),
+                        parts: vec![RuleInst::Literal("Redish Orange".to_string())],
+                    },
+                    Rule {
+                        raw: "Greenish Blue".to_string(),
+                        parts: vec![RuleInst::Literal("Greenish Blue".to_string())],
+                    },
+                    Rule {
+                        raw: "Purplish Pink".to_string(),
+                        parts: vec![RuleInst::Literal("Purplish Pink".to_string())],
+                    },
+                ],
+                choices: vec![0, 1, 2],
+            },
+        );
+
+        // Err(TableError::ParseError("not implemented".to_string()))
+        Ok(Self { tables })
     }
 
     pub fn gen(&self, id: &str) -> Result<String, TableError> {
@@ -106,7 +132,7 @@ struct Rule {
 }
 
 impl Rule {
-    pub fn parse(&mut self) -> Result<(), TableError> {
+    pub fn new(&mut self) -> Result<Self, TableError> {
         Err(TableError::ParseError("not implemented".to_string()))
     }
 
@@ -139,6 +165,11 @@ fn main() -> Result<(), String> {
         Ok(tabol) => tabol,
         Err(error) => return Err(error.to_string()),
     };
+
+    match tabol.gen("color") {
+        Ok(color) => println!("{}", color),
+        Err(error) => return Err(error.to_string()),
+    }
 
     Ok(())
 }
