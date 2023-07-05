@@ -67,7 +67,11 @@ impl Tabol {
                     },
                     Rule {
                         raw: "Purplish Pink".to_string(),
-                        parts: vec![RuleInst::Literal("Purplish Pink".to_string())],
+                        parts: vec![
+                            RuleInst::Literal("Purplish Pink (".to_string()),
+                            RuleInst::Interpolation("color".to_string()),
+                            RuleInst::Literal(")".to_string()),
+                        ],
                     },
                 ],
                 choices: vec![0, 1, 2],
@@ -147,7 +151,7 @@ impl Rule {
             })
             .collect();
 
-        Ok(resolved?.join(" "))
+        Ok(resolved?.join(""))
     }
 }
 
@@ -166,8 +170,13 @@ fn main() -> Result<(), String> {
         Err(error) => return Err(error.to_string()),
     };
 
-    match tabol.gen("color") {
-        Ok(color) => println!("{}", color),
+    // match tabol.gen("color") {
+    //     Ok(color) => println!("{}", color),
+    //     Err(error) => return Err(error.to_string()),
+    // }
+
+    match tabol.gen_many("color", 10) {
+        Ok(colors) => println!("{:?}", colors),
         Err(error) => return Err(error.to_string()),
     }
 
