@@ -1,19 +1,14 @@
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag, take_till1, take_until, take_while, take_while1},
-    character::{
-        complete::{alphanumeric1, anychar, digit1, line_ending, not_line_ending, space0},
-        is_alphabetic, is_space,
-    },
-    combinator::{all_consuming, consumed, eof, map, map_parser, map_res, opt, recognize},
+    bytes::complete::{tag, take_until, take_while, take_while1},
+    character::complete::{alphanumeric1, digit1, line_ending, not_line_ending},
+    combinator::{all_consuming, consumed, eof, map, map_parser, map_res},
     error::make_error,
     multi::{fold_many1, many1, many_till},
     sequence::{delimited, pair, separated_pair, terminated, tuple},
     IResult,
 };
-use rand::prelude::*;
-use std::error::Error;
-use std::{collections::HashMap, fmt, vec};
+use std::{collections::HashMap, vec};
 
 use crate::{Rule, RuleInst, Table};
 

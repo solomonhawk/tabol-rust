@@ -1,5 +1,33 @@
 # Random Tables Parser
 
+This is a work in progress parser/generator of random tables using Rust and `nom` (a parser combinator).
+
+Table definitions look like the following (entries can refer to other tables using `{{table_name}}`):
+
+```
+---
+title: Colors
+id: color
+---
+1: Red
+2: Blue
+3: Green
+
+---
+title: Shapes
+id: shape
+---
+1. Circle
+2. Square
+3. Triangle
+
+---
+title: Colored Shapes
+id: colored_shape
+---
+1. {{color}} {{shape}}
+```
+
 ## TODO
 - [ ] validate variant indicies don't overlap
 - [ ] consider switching to weights instead of numeric indices - easier to adjust frequency
