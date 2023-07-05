@@ -25,6 +25,18 @@ pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
     all_consuming(many1(table))(input)
 }
 
+/**
+ * --------- Table ---------
+ *
+ *   ┌───────────────────┐
+ *   │    Frontmatter    │
+ *   ├───────────────────┤
+ *   │                   │
+ *   │       Rules       │
+ *   │                   │
+ *   └───────────────────┘
+ *
+ */
 fn table(input: &str) -> IResult<&str, Table> {
     let (remaining, (frontmatter, rules, _)) = tuple((frontmatter, rules, whitespace))(input)?;
 
@@ -100,6 +112,7 @@ fn frontmatter_attr(input: &str) -> IResult<&str, (&str, &str)> {
     )(input)
 }
 
+// --------- Rules ---------
 fn rules(input: &str) -> IResult<&str, Vec<ParsedRule>> {
     many1(terminated(
         map_parser(not_line_ending, one_rule_entry),
