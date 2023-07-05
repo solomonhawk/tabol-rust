@@ -48,6 +48,19 @@ id: variable_frequency
 - [ ] consider switching to weights instead of numeric indices - easier to adjust frequency
 - [ ] some kind of UI?
 - [ ] wasm build
+- [ ] CLI with clap
+  - [ ] load .tbl from file
+  - [ ] execute some gen/gen_many command
+  - [ ] interactive? (browse tables, issue multiple gen commands, history)
+- [ ] versioning (version in frontmatter)
+  - [ ] versioned parsers
+
+### Future
+- parameters/filtering (e.g. count, distinct, conjunctions)
+- better validation
+- distribution? referencing tables other people maintain
+  - forking is useful for tweaking, but a ref could mean getting updates without "pull"ing
+  - compatibility/versioning (hash of contents?)
 
 ## Example Output
 
