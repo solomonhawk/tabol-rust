@@ -22,8 +22,7 @@ pub struct ParsedRule {
 
 // --------- Tabol ---------
 pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
-    let (remaining, tables) = all_consuming(many1(table))(input)?;
-    Ok((remaining, tables))
+    all_consuming(many1(table))(input)
 }
 
 fn table(input: &str) -> IResult<&str, Table> {
