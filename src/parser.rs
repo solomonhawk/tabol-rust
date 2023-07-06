@@ -11,7 +11,7 @@ use nom::{
 };
 use std::collections::HashMap;
 
-use crate::{Rule, RuleInst, Table};
+use crate::tabol::{Rule, RuleInst, Table};
 
 // --------- Tabol ---------
 pub fn parse_tables<'a>(input: &'a str) -> IResult<&'a str, Vec<Table>> {

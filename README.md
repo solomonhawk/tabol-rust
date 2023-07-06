@@ -45,6 +45,10 @@ id: variable_frequency
 
 ## TODO
 - [ ] optional interpolations?
+- [ ] built-ins
+- [ ] extensibility
+- [ ] better handling of articles (a/an)
+- [ ] filters (e.g. capitalize, for articles)
 - [ ] consider switching to weights instead of numeric indices - easier to adjust frequency
 - [ ] some kind of UI?
 - [ ] wasm build
