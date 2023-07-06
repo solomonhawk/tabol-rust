@@ -144,14 +144,11 @@ pub enum RuleInst {
 fn main() -> Result<(), Box<dyn Error>> {
     let table_def = include_str!("potion.tbl");
 
-    match Tabol::new(table_def.trim()) {
-        Err(error) => return Err(Box::new(error)),
-        Ok(tabol) => {
-            println!("{:#?}", tabol);
-            println!("table ids: {:?}", tabol.table_ids());
-            println!("{:#?}", tabol.gen_many("potion", 20));
-        }
-    };
+    let tabol = Tabol::new(table_def.trim())?;
+
+    println!("{:#?}", tabol);
+    println!("table ids: {:?}", tabol.table_ids());
+    println!("{:#?}", tabol.gen_many("potion", 20));
 
     Ok(())
 }
