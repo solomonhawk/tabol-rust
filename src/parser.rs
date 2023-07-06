@@ -14,7 +14,7 @@ use std::collections::HashMap;
 use crate::{Rule, RuleInst, Table};
 
 // --------- Tabol ---------
-pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
+pub fn parse_tables<'a>(input: &'a str) -> IResult<&'a str, Vec<Table>> {
     all_consuming(many1(table))(input)
 }
 
@@ -30,7 +30,7 @@ pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
  *   └───────────────────┘
  *
  */
-fn table(input: &str) -> IResult<&str, Table> {
+fn table<'a>(input: &'a str) -> IResult<&'a str, Table<'a>> {
     let (input, (frontmatter, rules, _)) = tuple((frontmatter, rules, whitespace))(input)?;
     let weights = rules.iter().map(|rule| rule.weight).collect::<Vec<_>>();
 
@@ -40,9 +40,9 @@ fn table(input: &str) -> IResult<&str, Table> {
     ))
 }
 
-struct Frontmatter {
-    pub title: String,
-    pub id: String,
+struct Frontmatter<'a> {
+    pub title: &'a str,
+    pub id: &'a str,
 }
 
 fn frontmatter(input: &str) -> IResult<&str, Frontmatter> {
@@ -52,7 +52,7 @@ fn frontmatter(input: &str) -> IResult<&str, Frontmatter> {
             frontmatter_attr,
             HashMap::new,
             |mut acc: HashMap<_, _>, (k, v)| {
-                acc.insert(k, v.to_string());
+                acc.insert(k, v);
                 acc
             },
         ),
@@ -70,13 +70,7 @@ fn frontmatter(input: &str) -> IResult<&str, Frontmatter> {
         nom::error::ErrorKind::Many1,
     )))?;
 
-    Ok((
-        input,
-        Frontmatter {
-            id: id.to_string(),
-            title: title.to_string(),
-        },
-    ))
+    Ok((input, Frontmatter { id, title }))
 }
 
 fn frontmatter_attr(input: &str) -> IResult<&str, (&str, &str)> {
@@ -100,11 +94,7 @@ fn one_rule_entry(input: &str) -> IResult<&str, Rule> {
         separated_pair(float, alt((tag(". "), tag(": "))), rule),
         |(weight, (raw, parts))| {
             // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
-            Ok::<Rule, nom::error::Error<nom::error::ErrorKind>>(Rule {
-                raw: raw.to_string(),
-                weight,
-                parts,
-            })
+            Ok::<Rule, nom::error::Error<nom::error::ErrorKind>>(Rule { raw, weight, parts })
         },
     )(input)
 }
@@ -119,13 +109,13 @@ pub fn rule(input: &str) -> IResult<&str, (&str, Vec<RuleInst>)> {
 
 fn rule_literal(input: &str) -> IResult<&str, RuleInst> {
     map(alt((take_until("{{"), not_line_ending)), |s: &str| {
-        RuleInst::Literal(s.to_string())
+        RuleInst::Literal(s)
     })(input)
 }
 
 fn rule_interpolation(input: &str) -> IResult<&str, RuleInst> {
     map(delimited(tag("{{"), ident, tag("}}")), |s: &str| {
-        RuleInst::Interpolation(s.to_string())
+        RuleInst::Interpolation(s)
     })(input)
 }
 

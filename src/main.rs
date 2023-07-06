@@ -5,7 +5,7 @@ use rand::prelude::*;
 use std::error::Error;
 use std::{collections::HashMap, fmt};
 
-type TableId = String;
+type TableId<'a> = &'a str;
 
 #[derive(Debug, Clone)]
 pub enum TableError {
@@ -31,12 +31,12 @@ impl fmt::Display for TableError {
 }
 
 #[derive(Debug)]
-pub struct Tabol {
-    table_map: HashMap<String, Table>,
+pub struct Tabol<'a> {
+    table_map: HashMap<&'a str, Table<'a>>,
 }
 
-impl Tabol {
-    pub fn new(table_definitions: &str) -> Result<Self, TableError> {
+impl<'a> Tabol<'a> {
+    pub fn new(table_definitions: &'a str) -> Result<Self, TableError> {
         let mut table_map = HashMap::new();
         let (_, tables) = parser::parse_tables(table_definitions).map_err(|e| {
             // TODO: better error handling, convert nom errors to TableError
@@ -45,14 +45,14 @@ impl Tabol {
         })?;
 
         for table in tables {
-            table_map.insert(table.id.clone(), table);
+            table_map.insert(table.id, table);
         }
 
         Ok(Self { table_map })
     }
 
     pub fn table_ids(&self) -> Vec<&str> {
-        self.table_map.keys().map(|s| s.as_str()).collect()
+        self.table_map.keys().copied().collect()
     }
 
     pub fn gen(&self, id: &str) -> Result<String, TableError> {
@@ -85,16 +85,16 @@ impl Tabol {
 }
 
 #[derive(Debug)]
-pub struct Table {
-    pub title: String,
-    pub id: TableId,
-    pub rules: Vec<Rule>,
+pub struct Table<'a> {
+    pub title: &'a str,
+    pub id: TableId<'a>,
+    pub rules: Vec<Rule<'a>>,
     pub weights: Vec<f32>,
     pub distribution: WeightedIndex<f32>,
 }
 
-impl Table {
-    pub fn new(title: String, id: TableId, rules: Vec<Rule>, weights: Vec<f32>) -> Self {
+impl<'a> Table<'a> {
+    pub fn new(title: &'a str, id: &'a str, rules: Vec<Rule<'a>>, weights: Vec<f32>) -> Self {
         Self {
             title,
             id,
@@ -113,20 +113,19 @@ impl Table {
 }
 
 #[derive(Debug, Clone)]
-pub struct Rule {
-    pub raw: String,
+pub struct Rule<'a> {
+    pub raw: &'a str,
     pub weight: f32,
-    pub parts: Vec<RuleInst>,
+    pub parts: Vec<RuleInst<'a>>,
 }
 
-impl Rule {
+impl Rule<'_> {
     pub fn resolve(&self, tables: &Tabol) -> Result<String, TableError> {
         let resolved: Result<Vec<String>, TableError> = self
             .parts
-            .clone()
-            .into_iter()
+            .iter()
             .map(|part| match part {
-                RuleInst::Literal(str) => Ok(str),
+                RuleInst::Literal(str) => Ok(str.to_string()),
                 RuleInst::Interpolation(id) => tables.gen(&id),
             })
             .collect();
@@ -136,9 +135,9 @@ impl Rule {
 }
 
 #[derive(Debug, Clone)]
-pub enum RuleInst {
-    Literal(String),
-    Interpolation(TableId), // parameters?
+pub enum RuleInst<'a> {
+    Literal(&'a str),
+    Interpolation(TableId<'a>), // parameters?
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
