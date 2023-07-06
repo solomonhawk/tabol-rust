@@ -2,150 +2,202 @@
 title: Potion
 id: potion
 ---
-1: A {{quality}} {{color}} {{material}} {{containment}} a {{shape}} {{container}}. It smells like {{smell}} and {{potion_attribute}}.
+1: A {{potion_descriptor}} {{color}} {{potion_substance}} {{containment}} a {{container_descriptor}} {{container_shape}} {{container_material}} {{container_type}}. It smells like {{smell}} and {{potion_attribute}}.
 
 ---
 title: Containment
 id: containment
 ---
 1: contained within
-2: trapped in
-3: sloshing around in
-4: held by
-5: delicately stirring within
-6: bubbling within
-7: floating in
-8: suspended in
-9: swirling within
-10: resting in
+1: trapped in
+1: sloshing around in
+1: held by
+1: delicately stirring within
+1: bubbling within
+1: floating in
+1: suspended in
+1: swirling within
+1: resting in
 
 ---
-title: Quality
-id: quality
+title: Potion Descriptor
+id: potion_descriptor
 ---
 1: fresh
-2: ripe
-3: stale
-4: brand new
-5: questionable
-6: vibrant
-7: musty
-8: ancient
-9: old
-10: whimsical
+1: ripe
+1: stale
+1: brand new
+1: questionable
+1: vibrant
+1: musty
+1: ancient
+1: old
+1: whimsical
+1: translucent
+1: fiery
+1: swirling
+1: iridescent
+1: mysterious
+1: shimmering
 
 ---
 title: Color
 id: color
 ---
 1: red
-2: orange
-3: yellow
-4: green
-5: blue
-6: purple
-7: pink
-8: black
-9: white
-10: multi-colored
-11: chromatic
-12: {{color}}-{{color}}
+1: orange
+1: yellow
+1: green
+1: blue
+1: purple
+1: pink
+1: black
+1: white
+1: multi-colored
+1: chromatic
+1: {{color}}-{{color}}
+1: gold
+1: silver
 
 ---
-title: Material
-id: material
+title: Potion Substance
+id: potion_substance
 ---
-1-5: liquid
-6-7: gelatin
-8: goo
-9: sludge
+5: liquid
+2: gelatin
+1: goo
+1: sludge
+1: mist
+1: vapor
+1: syrup
+1: foam
 
 ---
-title: Shape
-id: shape
+title: Container Descriptor
+id: container_descriptor
+---
+1: twisted
+1: jagged
+1: small
+1: large
+1: delicate
+1: master-crafted
+1: pock-marked
+1: cracked
+1: smooth
+1: ornate
+1: simple
+1: engraved
+1: etched
+1: painted
+
+---
+title: Container Material
+id: container_material
+---
+5: glass
+2: crystal
+1: obsidian
+1: seashell
+1: clay
+1: wood
+1: metal
+1: bone
+
+---
+title: Container Shape
+id: container_shape
 ---
 1: round
-2: rectangular
-3: tear-shaped
-4: circular
-5: triangular
-6: long and narrow
-7: tall
-8: double-spouted
-9: thin-rimmed
+1: spherical
+1: rectangular
+1: tear-shaped
+1: circular
+1: triangular
+1: long and narrow
+1: tall
+1: double-spouted
+1: thin-rimmed
+1: crystalline
+1: hexagonal
 
 ---
-title: Container
-id: container
+title: Container Type
+id: container_type
 ---
 1: vial
-2: bottle
-3: flask
-4: jar
-5: jug
-6: decanter
-7: beaker
-9: bowl
+1: bottle
+1: flask
+1: jar
+1: jug
+1: decanter
+1: beaker
+1: bowl
+0.5: cauldron
+1: chalice
+1: phial
+1: orb
+1: prism
 
 ---
 title: Smell
 id: smell
 ---
 1: roses
-2: lavender
-3: a foot
-4: hay
-5: a fresh apple pie
-6: moldy bread
-7: starlight
-8: happiness
-9: family
-10: a summer breeze
-11: coal
-12: boiled sweets
-13: death
-14: evil
-15: sulphur
-16: regret
-17: grain alcohol
+1: lavender
+1: a foot
+1: hay
+1: a fresh apple pie
+1: moldy bread
+1: starlight
+1: happiness
+1: family
+1: a summer breeze
+1: coal
+1: boiled sweets
+1: death
+1: evil
+1: sulphur
+1: regret
+1: grain alcohol
 
 ---
 title: Attribute
 id: potion_attribute
 ---
 1: glows with a dim {{color}} light
-2: it shimmers and swirls curiously
-3: reminds you of someone you used to know
-4: it's warm to the touch
-5: it's cold to the touch
-6: it roils and bubbles energetically
-7: it sparkles with {{color}} flecks
-8: it gives off a {{color}} smoke when agitated
-9: it's viscous and thick
-10: makes you feel {{emotion}}
-11: it's a little bit sticky
-12: it pops and crackles
-13: makes you uneasy when you look at it
-14: it seems to be calling you to drink it
-15: it longs to be consumed
-16: even though you're confident, you're not sure you want to drink it
-17: it's troubling to look at
-18: it's a little bit slimy
-19: resembles a failed science experiment
+1: it shimmers and swirls curiously
+1: reminds you of someone you used to know
+1: it's warm to the touch
+1: it's cold to the touch
+1: it roils and bubbles energetically
+1: it sparkles with {{color}} flecks
+1: it gives off a {{color}} smoke when agitated
+1: it's viscous and thick
+1: makes you feel {{emotion}}
+1: it's a little bit sticky
+1: it pops and crackles
+1: makes you uneasy when you look at it
+1: it seems to be calling you to drink it
+1: it longs to be consumed
+1: even though you're confident, you're not sure you want to drink it
+1: it's troubling to look at
+1: it's a little bit slimy
+1: resembles a failed science experiment
 
 ---
 title: Emotion
 id: emotion
 ---
 1: happy
-2: sad
-3: angry
-4: confused
-5: scared
-6: excited
-7: sleepy
-8: hungry
-9: thirsty
-10: lonely
-11: loved
-12: hated
+1: sad
+1: angry
+1: confused
+1: scared
+1: excited
+1: sleepy
+1: hungry
+1: thirsty
+1: lonely
+1: loved
+1: hated

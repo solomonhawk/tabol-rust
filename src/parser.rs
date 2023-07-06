@@ -1,24 +1,17 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while, take_while1},
-    character::complete::{alphanumeric1, digit1, line_ending, not_line_ending},
+    character::complete::{alphanumeric1, line_ending, not_line_ending},
     combinator::{all_consuming, consumed, eof, map, map_parser, map_res},
     error::make_error,
     multi::{fold_many1, many1, many_till},
+    number::complete::float,
     sequence::{delimited, pair, separated_pair, terminated, tuple},
     IResult,
 };
-use std::{collections::HashMap, vec};
+use std::collections::HashMap;
 
 use crate::{Rule, RuleInst, Table};
-
-type Indices = (usize, usize);
-
-#[derive(Debug)]
-pub struct ParsedRule {
-    indices: Indices,
-    rule: Rule,
-}
 
 // --------- Tabol ---------
 pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
@@ -38,31 +31,12 @@ pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
  *
  */
 fn table(input: &str) -> IResult<&str, Table> {
-    let (remaining, (frontmatter, rules, _)) = tuple((frontmatter, rules, whitespace))(input)?;
-
-    let mut choices = vec![];
-    let rules = rules
-        .iter()
-        .enumerate()
-        .map(|(i, parsed_rule)| {
-            let (min, max) = parsed_rule.indices;
-
-            for _ in min..=max {
-                choices.push(i);
-            }
-
-            parsed_rule.rule.clone()
-        })
-        .collect();
+    let (input, (frontmatter, rules, _)) = tuple((frontmatter, rules, whitespace))(input)?;
+    let weights = rules.iter().map(|rule| rule.weight).collect::<Vec<_>>();
 
     Ok((
-        remaining,
-        Table {
-            title: frontmatter.title,
-            id: frontmatter.id,
-            rules,
-            choices,
-        },
+        input,
+        Table::new(frontmatter.title, frontmatter.id, rules, weights),
     ))
 }
 
@@ -72,7 +46,7 @@ struct Frontmatter {
 }
 
 fn frontmatter(input: &str) -> IResult<&str, Frontmatter> {
-    let (remaining, attrs) = delimited(
+    let (input, attrs) = delimited(
         pair(tag("---"), line_ending),
         fold_many1(
             frontmatter_attr,
@@ -97,7 +71,7 @@ fn frontmatter(input: &str) -> IResult<&str, Frontmatter> {
     )))?;
 
     Ok((
-        remaining,
+        input,
         Frontmatter {
             id: id.to_string(),
             title: title.to_string(),
@@ -113,50 +87,34 @@ fn frontmatter_attr(input: &str) -> IResult<&str, (&str, &str)> {
 }
 
 // --------- Rules ---------
-fn rules(input: &str) -> IResult<&str, Vec<ParsedRule>> {
+fn rules(input: &str) -> IResult<&str, Vec<Rule>> {
     many1(terminated(
         map_parser(not_line_ending, one_rule_entry),
         alt((eof, line_ending)),
     ))(input)
 }
 
-fn one_rule_entry(input: &str) -> IResult<&str, ParsedRule> {
+fn one_rule_entry(input: &str) -> IResult<&str, Rule> {
     map_res(
         // maybe don't allow both : and .? it got annoying while testing
-        separated_pair(rule_indices, alt((tag(". "), tag(": "))), rule),
-        |(indices, rule)| {
+        separated_pair(float, alt((tag(". "), tag(": "))), rule),
+        |(weight, (raw, parts))| {
             // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
-            Ok::<ParsedRule, nom::error::Error<nom::error::ErrorKind>>(ParsedRule { indices, rule })
+            Ok::<Rule, nom::error::Error<nom::error::ErrorKind>>(Rule {
+                raw: raw.to_string(),
+                weight,
+                parts,
+            })
         },
     )(input)
 }
 
-fn rule_indices(input: &str) -> IResult<&str, Indices> {
-    alt((
-        separated_pair(int, tag("-"), int),
-        map_res(int, |n: usize| {
-            // this turbofish seems _incredibly_ unnecessary, but rust makes me specify it
-            Ok::<Indices, nom::error::Error<nom::error::ErrorKind>>((n, n))
-        }),
-    ))(input)
-}
-
-fn int(input: &str) -> IResult<&str, usize> {
-    map_res(digit1, |s: &str| str::parse::<usize>(s))(input)
-}
-
 // --------- Rule ---------
-pub fn rule(input: &str) -> IResult<&str, Rule> {
-    let (remaining, (raw, (parts, _))) =
+pub fn rule(input: &str) -> IResult<&str, (&str, Vec<RuleInst>)> {
+    let (input, (raw, (parts, _))) =
         consumed(many_till(alt((rule_interpolation, rule_literal)), eof))(input)?;
 
-    Ok((
-        remaining,
-        Rule {
-            raw: raw.to_string(),
-            parts,
-        },
-    ))
+    Ok((input, (raw, parts)))
 }
 
 fn rule_literal(input: &str) -> IResult<&str, RuleInst> {

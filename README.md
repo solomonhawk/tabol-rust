@@ -10,16 +10,16 @@ title: Colors
 id: color
 ---
 1: Red
-2: Blue
-3: Green
+1: Blue
+1: Green
 
 ---
 title: Shapes
 id: shape
 ---
 1: Circle
-2: Square
-3: Triangle
+1: Square
+1: Triangle
 
 ---
 title: Colored Shapes
@@ -28,23 +28,23 @@ id: colored_shape
 1: {{color}} {{shape}}
 ```
 
-Entry frequency can be adjusted by specifying a range instead of a single number as the label:
+Entry frequency can be adjusted by specifying a different weight for some rows:
 
 ```
 ---
 title: Variable Frequency
 id: variable_frequency
 ---
-1-50: common
-51-75: uncommon
-76-85: rare
-86-93: epic
-94-99: legendary
-100: mythic
+60: common
+30: uncommon
+15: rare
+5: epic
+3: legendary
+1: mythic
 ```
 
 ## TODO
-- [ ] validate variant indicies don't overlap
+- [ ] optional interpolations?
 - [ ] consider switching to weights instead of numeric indices - easier to adjust frequency
 - [ ] some kind of UI?
 - [ ] wasm build
@@ -56,7 +56,7 @@ id: variable_frequency
   - [ ] versioned parsers
 
 ### Future
-- parameters/filtering (e.g. count, distinct, conjunctions)
+- parameters/filtering (e.g. count, distinct, conjunctions, context-aware of previous matches)
 - better validation
 - distribution? referencing tables other people maintain
   - forking is useful for tweaking, but a ref could mean getting updates without "pull"ing

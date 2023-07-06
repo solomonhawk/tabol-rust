@@ -1,5 +1,6 @@
 mod parser;
 
+use rand::distributions::WeightedIndex;
 use rand::prelude::*;
 use std::error::Error;
 use std::{collections::HashMap, fmt};
@@ -88,16 +89,24 @@ pub struct Table {
     pub title: String,
     pub id: TableId,
     pub rules: Vec<Rule>,
-    pub choices: Vec<usize>, // indices into rules
+    pub weights: Vec<f32>,
+    pub distribution: WeightedIndex<f32>,
 }
 
 impl Table {
+    pub fn new(title: String, id: TableId, rules: Vec<Rule>, weights: Vec<f32>) -> Self {
+        Self {
+            title,
+            id,
+            rules,
+            weights: weights.clone(),
+            distribution: WeightedIndex::new(&weights).unwrap(),
+        }
+    }
+
     pub fn gen(&self, tables: &Tabol) -> Result<String, TableError> {
         let mut rng = rand::thread_rng();
-        // pick a random number between 0 and len(choices)
-        let i = rng.gen_range(0..self.choices.len());
-        // use that to select the correct rule
-        let rule = &self.rules[self.choices[i]];
+        let rule = &self.rules[self.distribution.sample(&mut rng)];
 
         rule.resolve(tables)
     }
@@ -106,6 +115,7 @@ impl Table {
 #[derive(Debug, Clone)]
 pub struct Rule {
     pub raw: String,
+    pub weight: f32,
     pub parts: Vec<RuleInst>,
 }
 
@@ -137,6 +147,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     match Tabol::new(table_def.trim()) {
         Err(error) => return Err(Box::new(error)),
         Ok(tabol) => {
+            println!("{:#?}", tabol);
+            println!("table ids: {:?}", tabol.table_ids());
             println!("{:#?}", tabol.gen_many("potion", 20));
         }
     };
