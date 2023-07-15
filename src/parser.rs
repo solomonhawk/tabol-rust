@@ -1,13 +1,13 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while, take_while1},
-    character::complete::{alphanumeric1, line_ending, not_line_ending},
+    character::complete::{alphanumeric1, digit1, line_ending, not_line_ending},
     combinator::{all_consuming, consumed, eof, map, map_parser, map_res},
     error::make_error,
     multi::{fold_many1, many0, many1, many_till},
     number::complete::float,
     sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
-    Err, IResult,
+    IResult,
 };
 use std::collections::HashMap;
 
@@ -101,10 +101,33 @@ fn one_rule_entry(input: &str) -> IResult<&str, Rule> {
 
 // --------- Rule ---------
 pub fn rule(input: &str) -> IResult<&str, (&str, Vec<RuleInst>)> {
-    let (input, (raw, (parts, _))) =
-        consumed(many_till(alt((rule_interpolation, rule_literal)), eof))(input)?;
+    let (input, (raw, (parts, _))) = consumed(many_till(
+        alt((rule_dice_roll, rule_interpolation, rule_literal)),
+        eof,
+    ))(input)?;
 
     Ok((input, (raw, parts)))
+}
+
+fn rule_dice_roll(input: &str) -> IResult<&str, RuleInst> {
+    map(
+        delimited(
+            tag("{{"),
+            // should throw error if no sides
+            alt((
+                tuple((
+                    map_res(digit1, str::parse),
+                    preceded(tag("d"), map_res(digit1, str::parse)),
+                )),
+                map(
+                    tuple((tag("d"), map_res(digit1, str::parse))),
+                    |(_, sides)| (1, sides),
+                ),
+            )),
+            tag("}}"),
+        ),
+        |(count, sides)| RuleInst::DiceRoll(count, sides),
+    )(input)
 }
 
 fn rule_literal(input: &str) -> IResult<&str, RuleInst> {

@@ -1,4 +1,4 @@
-use rand::distributions::WeightedIndex;
+use rand::distributions::{Uniform, WeightedIndex};
 use rand::prelude::*;
 use std::error::Error;
 use std::{collections::HashMap, fmt};
@@ -128,6 +128,7 @@ impl Rule<'_> {
             .parts
             .iter()
             .map(|part| match part {
+                RuleInst::DiceRoll(count, sides) => Ok(roll_dice(*count, *sides).to_string()),
                 RuleInst::Literal(str) => Ok(str.to_string()),
                 RuleInst::Interpolation(id, opts) => {
                     let mut resolved = tables.gen(id)?;
@@ -147,6 +148,7 @@ impl Rule<'_> {
 
 #[derive(Debug, Clone)]
 pub enum RuleInst<'a> {
+    DiceRoll(usize, usize), // (count, sides)
     Literal(&'a str),
     Interpolation(TableId<'a>, Vec<FilterOp>),
 }
@@ -183,6 +185,36 @@ impl FilterOp {
                     *value = format!("{}{}", first.to_uppercase(), chars.as_str());
                 }
             }
+        }
+    }
+}
+
+pub fn roll_dice(count: usize, sides: usize) -> usize {
+    let mut rng = rand::thread_rng();
+    let mut total = 0;
+
+    for _ in 0..count {
+        total += rng.sample(Uniform::new(1, sides + 1));
+    }
+
+    total
+}
+
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_roll_dice() {
+        for _ in 0..10000 {
+            let roll = roll_dice(1, 6);
+            assert!(roll >= 1);
+            assert!(roll <= 6);
+        }
+
+        for _ in 0..10000 {
+            let roll = roll_dice(5, 10);
+            assert!(roll >= 5);
+            assert!(roll <= 50);
         }
     }
 }

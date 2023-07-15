@@ -154,6 +154,7 @@ id: container_shape
 1: thin-rimmed
 1: crystalline
 1: hexagonal
+1: {{3d4}}-dimensional
 
 ---
 title: Container Type
