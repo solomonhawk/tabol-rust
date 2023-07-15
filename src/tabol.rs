@@ -129,7 +129,15 @@ impl Rule<'_> {
             .iter()
             .map(|part| match part {
                 RuleInst::Literal(str) => Ok(str.to_string()),
-                RuleInst::Interpolation(id) => tables.gen(&id),
+                RuleInst::Interpolation(id, opts) => {
+                    let mut resolved = tables.gen(id)?;
+
+                    for opt in opts {
+                        opt.apply(&mut resolved);
+                    }
+
+                    Ok(resolved)
+                }
             })
             .collect();
 
@@ -140,5 +148,41 @@ impl Rule<'_> {
 #[derive(Debug, Clone)]
 pub enum RuleInst<'a> {
     Literal(&'a str),
-    Interpolation(TableId<'a>), // parameters?
+    Interpolation(TableId<'a>, Vec<FilterOp>),
+}
+
+#[derive(Debug, Clone)]
+pub enum FilterOp {
+    DefiniteArticle,
+    IndefiniteArticle,
+    Capitalize,
+}
+
+impl FilterOp {
+    pub fn apply(&self, value: &mut String) {
+        match self {
+            FilterOp::DefiniteArticle => {
+                value.insert_str(0, "the ");
+            }
+            FilterOp::IndefiniteArticle => {
+                // naive approach
+                if value.starts_with("a")
+                    || value.starts_with("e")
+                    || value.starts_with("i")
+                    || value.starts_with("o")
+                    || value.starts_with("u")
+                {
+                    value.insert_str(0, "an ");
+                } else {
+                    value.insert_str(0, "a ");
+                }
+            }
+            FilterOp::Capitalize => {
+                let mut chars = value.chars();
+                if let Some(first) = chars.next() {
+                    *value = format!("{}{}", first.to_uppercase(), chars.as_str());
+                }
+            }
+        }
+    }
 }

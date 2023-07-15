@@ -2,7 +2,7 @@
 title: Potion
 id: potion
 ---
-1: A {{potion_descriptor}} {{color}} {{potion_substance}} {{containment}} a {{container_descriptor}} {{container_shape}} {{container_material}} {{container_type}}. It smells like {{smell}} and {{potion_attribute}}.
+1: {{potion_descriptor|indefinite|capitalize}} {{color}} {{potion_substance}} {{containment}} {{container_descriptor|indefinite}} {{container_shape}} {{container_material}} {{container_type}}. It smells like {{smell}} and {{potion_attribute}}.
 
 ---
 title: Containment

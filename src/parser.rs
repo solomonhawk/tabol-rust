@@ -4,14 +4,14 @@ use nom::{
     character::complete::{alphanumeric1, line_ending, not_line_ending},
     combinator::{all_consuming, consumed, eof, map, map_parser, map_res},
     error::make_error,
-    multi::{fold_many1, many1, many_till},
+    multi::{fold_many1, many0, many1, many_till},
     number::complete::float,
-    sequence::{delimited, pair, separated_pair, terminated, tuple},
-    IResult,
+    sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
+    Err, IResult,
 };
 use std::collections::HashMap;
 
-use crate::tabol::{Rule, RuleInst, Table};
+use crate::tabol::{FilterOp, Rule, RuleInst, Table};
 
 // --------- Tabol ---------
 pub fn parse_tables<'a>(input: &'a str) -> IResult<&'a str, Vec<Table>> {
@@ -114,9 +114,27 @@ fn rule_literal(input: &str) -> IResult<&str, RuleInst> {
 }
 
 fn rule_interpolation(input: &str) -> IResult<&str, RuleInst> {
-    map(delimited(tag("{{"), ident, tag("}}")), |s: &str| {
-        RuleInst::Interpolation(s)
+    map(delimited(tag("{{"), pipeline, tag("}}")), |(s, filters)| {
+        RuleInst::Interpolation(s, filters)
     })(input)
+}
+
+fn pipeline(input: &str) -> IResult<&str, (&str, Vec<FilterOp>)> {
+    pair(
+        ident,
+        map(many0(preceded(tag("|"), ident)), |filters: Vec<&str>| {
+            filters
+                .iter()
+                .map(|&filter| match filter {
+                    "definite" => FilterOp::DefiniteArticle,
+                    "indefinite" => FilterOp::IndefiniteArticle,
+                    "capitalize" => FilterOp::Capitalize,
+                    // better way to return error from `map` parser?
+                    _ => panic!("unknown filter: {}", filter),
+                })
+                .collect::<Vec<_>>()
+        }),
+    )(input)
 }
 
 fn ident(input: &str) -> IResult<&str, &str> {
