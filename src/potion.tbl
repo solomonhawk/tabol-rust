@@ -39,6 +39,21 @@ id: potion_descriptor
 1: iridescent
 1: mysterious
 1: shimmering
+1: dark
+1: brilliant
+1: sparkling
+1: glowing
+1: dull
+1: cloudy
+1: clear
+1: viscous
+1: thick
+1: hazy
+1: spotty
+1: bubbly
+1: effervescent
+1: frothy
+1: foamy
 
 ---
 title: Color
@@ -58,6 +73,25 @@ id: color
 1: {{color}}-{{color}}
 1: gold
 1: silver
+1: magenta
+1: cyan
+1: turquoise
+1: jade
+1: amber
+1: olive
+1: amethyst
+1: emerald
+1: ruby
+1: sunflower
+1: aquamarine
+1: sapphire
+1: vermillion
+1: lilac
+1: indigo
+1: violet
+1: teal
+1: chartreuse
+1: maroon
 
 ---
 title: Potion Substance
@@ -114,9 +148,9 @@ id: container_shape
 1: tear-shaped
 1: circular
 1: triangular
-1: long and narrow
+0.7: long and narrow
 1: tall
-1: double-spouted
+0.7: double-spouted
 1: thin-rimmed
 1: crystalline
 1: hexagonal
@@ -160,6 +194,23 @@ id: smell
 1: sulphur
 1: regret
 1: grain alcohol
+1: vanilla
+1: sandalwood
+1: lemon
+1: {{root_material}}root
+
+---
+title: Root Material
+id: root_material
+---
+1: pine
+1: oak
+1: willow
+1: birch
+1: apple
+1: sage
+1: gum
+1: ginger
 
 ---
 title: Attribute
@@ -184,6 +235,14 @@ id: potion_attribute
 1: it's troubling to look at
 1: it's a little bit slimy
 1: resembles a failed science experiment
+1: thrums with {{color}} energy
+1: vibrates intriguingly
+1: it seems ordinary enough
+1: it's like nothing you've ever seen before
+1: spins lazily on its own
+1: you've heard of something like this before
+1: when agitated, it hums and whines softly
+1: if you close your eyes, it makes you {{emotion}}
 
 ---
 title: Emotion
