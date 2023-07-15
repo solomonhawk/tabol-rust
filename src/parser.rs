@@ -14,7 +14,7 @@ use std::collections::HashMap;
 use crate::tabol::{FilterOp, Rule, RuleInst, Table};
 
 // --------- Tabol ---------
-pub fn parse_tables<'a>(input: &'a str) -> IResult<&'a str, Vec<Table>> {
+pub fn parse_tables(input: &str) -> IResult<&str, Vec<Table>> {
     all_consuming(many1(table))(input)
 }
 
@@ -30,7 +30,7 @@ pub fn parse_tables<'a>(input: &'a str) -> IResult<&'a str, Vec<Table>> {
  *   └───────────────────┘
  *
  */
-fn table<'a>(input: &'a str) -> IResult<&'a str, Table<'a>> {
+fn table(input: &str) -> IResult<&str, Table<'_>> {
     let (input, (frontmatter, rules, _)) = tuple((frontmatter, rules, whitespace))(input)?;
     let weights = rules.iter().map(|rule| rule.weight).collect::<Vec<_>>();
 

@@ -57,7 +57,7 @@ impl<'a> Tabol<'a> {
 
     pub fn gen(&self, id: &str) -> Result<String, TableError> {
         if let Some(table) = self.table_map.get(id) {
-            return table.gen(&self);
+            return table.gen(self);
         }
 
         Err(TableError::CallError(format!(
@@ -71,7 +71,7 @@ impl<'a> Tabol<'a> {
             let mut results = Vec::with_capacity(count);
 
             for _ in 0..count {
-                results.push(table.gen(&self));
+                results.push(table.gen(self));
             }
 
             return results.into_iter().collect();
@@ -166,18 +166,17 @@ impl FilterOp {
             FilterOp::DefiniteArticle => {
                 value.insert_str(0, "the ");
             }
+            FilterOp::IndefiniteArticle
+                if value.starts_with('a')
+                    || value.starts_with('e')
+                    || value.starts_with('i')
+                    || value.starts_with('o')
+                    || value.starts_with('u') =>
+            {
+                value.insert_str(0, "an ");
+            }
             FilterOp::IndefiniteArticle => {
-                // naive approach
-                if value.starts_with("a")
-                    || value.starts_with("e")
-                    || value.starts_with("i")
-                    || value.starts_with("o")
-                    || value.starts_with("u")
-                {
-                    value.insert_str(0, "an ");
-                } else {
-                    value.insert_str(0, "a ");
-                }
+                value.insert_str(0, "a ");
             }
             FilterOp::Capitalize => {
                 let mut chars = value.chars();
@@ -200,7 +199,8 @@ pub fn roll_dice(count: usize, sides: usize) -> usize {
     total
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     use super::*;
 
     #[test]
