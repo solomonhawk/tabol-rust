@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("{:#?}", tabol);
     println!("table ids: {:?}", tabol.table_ids());
-    println!("{:#?}", tabol.gen_many("potion", 20));
+    println!("{:#?}", tabol.gen_many("potion", 10));
 
     Ok(())
 }

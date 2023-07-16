@@ -1,3 +1,4 @@
+use nom::error::convert_error;
 use rand::distributions::{Uniform, WeightedIndex};
 use rand::prelude::*;
 use std::error::Error;
@@ -41,7 +42,10 @@ impl<'a> Tabol<'a> {
         let (_, tables) = parser::parse_tables(table_definitions).map_err(|e| {
             // TODO: better error handling, convert nom errors to TableError
             // nom has some pretty bad errors, maybe use nom-supreme?
-            TableError::ParseError(format!("failed to parse table definitions: {}", e))
+            TableError::ParseError(format!(
+                "failed to parse table definitions: {}",
+                convert_error(table_definitions, e)
+            ))
         })?;
 
         for table in tables {

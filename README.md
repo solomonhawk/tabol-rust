@@ -47,9 +47,9 @@ id: variable_frequency
 - [ ] optional interpolations?
 - [ ] built-ins
 - [ ] extensibility
-- [ ] better handling of articles (a/an)
-- [ ] filters (e.g. capitalize, for articles)
-- [ ] consider switching to weights instead of numeric indices - easier to adjust frequency
+- [x] better handling of articles (a/an)
+- [x] filters (e.g. capitalize, for articles)
+- [x] consider switching to weights instead of numeric indices - easier to adjust frequency
 - [ ] some kind of UI?
 - [ ] wasm build
 - [ ] CLI with clap
@@ -58,6 +58,7 @@ id: variable_frequency
   - [ ] interactive? (browse tables, issue multiple gen commands, history)
 - [ ] versioning (version in frontmatter)
   - [ ] versioned parsers
+- [ ] fix a table value
 
 ### Future
 - parameters/filtering (e.g. count, distinct, conjunctions, context-aware of previous matches)

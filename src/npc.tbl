@@ -194,5 +194,5 @@ id: skill_level
 title: NPC
 id: npc
 ---
-1: {{first_name}} {{last_name}} is a {{alignment}} {{race}} {{class}} originally from {{birthplace}}, known as a(n) {{reputation}} {{skill_level}} {{profession}}.
-3: {{first_name}} {{last_name}} is a commoner from {{birthplace}}, known as a(n) {{skill_level}} {{profession}}.
+1: {{first_name}} {{last_name}} is {{alignment|indefinite}} {{race}} {{class}} originally from {{birthplace}}, known as {{reputation|indefinite}} {{skill_level}} {{profession}}.
+3: {{first_name}} {{last_name}} is a commoner from {{birthplace}}, known as {{skill_level|indefinite}} {{profession}}.
