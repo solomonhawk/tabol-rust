@@ -1,4 +1,4 @@
-mod parser;
+mod nom_parser;
 mod tabol;
 
 use std::error::Error;

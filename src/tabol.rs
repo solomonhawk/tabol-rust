@@ -4,7 +4,7 @@ use rand::prelude::*;
 use std::error::Error;
 use std::{collections::HashMap, fmt};
 
-use crate::parser;
+use crate::nom_parser;
 
 type TableId<'a> = &'a str;
 
@@ -39,7 +39,7 @@ pub struct Tabol<'a> {
 impl<'a> Tabol<'a> {
     pub fn new(table_definitions: &'a str) -> Result<Self, TableError> {
         let mut table_map = HashMap::new();
-        let (_, tables) = parser::parse_tables(table_definitions).map_err(|e| {
+        let (_, tables) = nom_parser::parse_tables(table_definitions).map_err(|e| {
             // TODO: better error handling, convert nom errors to TableError
             // nom has some pretty bad errors, maybe use nom-supreme?
             TableError::ParseError(format!(
