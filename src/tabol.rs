@@ -32,7 +32,7 @@ impl<'a> fmt::Display for TableError<'a> {
                         // XXX: why do we get only Base sometimes, and why does it contain no information about the problem? "Expected eof"
                         write_base_error(f, source, location, format!("{}", kind).as_ref())?;
                     }
-                    GenericErrorTree::Stack { base, contexts } => {
+                    GenericErrorTree::Stack { base: _, contexts } => {
                         // XXX: just grab the "most recent" error right now
                         for context in contexts.iter().take(1) {
                             write_base_error(f, source, context.0, context.1.to_string().as_ref())?;

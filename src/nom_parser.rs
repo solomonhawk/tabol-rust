@@ -8,10 +8,7 @@ use nom::{
     sequence::{pair, separated_pair, tuple},
     IResult, Parser,
 };
-use nom_supreme::{
-    error::{BaseErrorKind, ErrorTree, Expectation, StackContext},
-    tag::complete::tag,
-};
+use nom_supreme::{error::ErrorTree, tag::complete::tag};
 use nom_supreme::{final_parser::final_parser, parser_ext::ParserExt};
 use std::collections::HashMap;
 
