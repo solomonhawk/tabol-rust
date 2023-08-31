@@ -15,6 +15,7 @@ pub enum TableError<'a> {
         &'a str,
         GenericErrorTree<&'static str, &'static str, &'static str, Box<dyn Error + Send + Sync>>,
     ),
+    InvalidDefinition(String),
     CallError(String),
 }
 
@@ -41,6 +42,9 @@ impl<'a> fmt::Display for TableError<'a> {
                     }
                     _ => (),
                 }
+            }
+            TableError::InvalidDefinition(msg) => {
+                write!(f, "invalid table definition: {}", msg)?;
             }
             TableError::CallError(msg) => {
                 write!(f, "invalid table call: {}", msg)?;
@@ -103,7 +107,24 @@ impl<'a> Tabol<'a> {
             table_map.insert(table.id, table);
         }
 
-        Ok(Self { table_map })
+        let tabol = Self { table_map };
+
+        tabol.validate_tables()
+    }
+
+    fn validate_tables(self) -> Result<Self, TableError<'a>> {
+        for (table_id, table) in self.table_map.iter() {
+            for rule in table.rules.iter() {
+                if let Err(err) = rule.resolve(&self) {
+                    return Err(TableError::InvalidDefinition(format!(
+                        "in table '{}' for rule '{}'. Original error: {}",
+                        table_id, rule.raw, err
+                    )));
+                }
+            }
+        }
+
+        Ok(self)
     }
 
     pub fn table_ids(&self) -> Vec<&str> {
