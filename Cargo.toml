@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 rand = "*"
 nom = "*"
+nom-supreme = "0.8.0"

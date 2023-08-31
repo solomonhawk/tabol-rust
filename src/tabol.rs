@@ -1,4 +1,5 @@
-use nom::error::convert_error;
+use nom_supreme::error::GenericErrorTree;
+use nom_supreme::final_parser::{Location, RecreateContext};
 use rand::distributions::{Uniform, WeightedIndex};
 use rand::prelude::*;
 use std::error::Error;
@@ -8,19 +9,38 @@ use crate::nom_parser;
 
 type TableId<'a> = &'a str;
 
-#[derive(Debug, Clone)]
-pub enum TableError {
-    ParseError(String),
+#[derive(Debug)]
+pub enum TableError<'a> {
+    ParseError(
+        &'a str,
+        GenericErrorTree<&'static str, &'static str, &'static str, Box<dyn Error + Send + Sync>>,
+    ),
     CallError(String),
 }
 
-impl Error for TableError {}
+impl<'a> Error for TableError<'a> {}
 
-impl fmt::Display for TableError {
+impl<'a> fmt::Display for TableError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            TableError::ParseError(msg) => {
-                write!(f, "table syntax is invalid: {}", msg)?;
+            TableError::ParseError(source, e) => {
+                writeln!(f, "Table syntax is invalid")?;
+                writeln!(f, "-----------------------------")?;
+
+                match e {
+                    GenericErrorTree::Base { location, kind } => {
+                        // XXX: why do we get only Base sometimes, and why does it contain no information about the problem? "Expected eof"
+                        write_base_error(f, source, location, format!("{}", kind).as_ref())?;
+                    }
+                    GenericErrorTree::Stack { base, contexts } => {
+                        // XXX: just grab the "most recent" error right now
+                        for context in contexts.iter().take(1) {
+                            write_base_error(f, source, context.0, context.1.to_string().as_ref())?;
+                            writeln!(f, "-----------------------------")?;
+                        }
+                    }
+                    _ => (),
+                }
             }
             TableError::CallError(msg) => {
                 write!(f, "invalid table call: {}", msg)?;
@@ -31,22 +51,53 @@ impl fmt::Display for TableError {
     }
 }
 
+fn write_base_error(
+    f: &mut fmt::Formatter,
+    source: &str,
+    location: &str,
+    msg: &str,
+) -> fmt::Result {
+    let Location { line, column } = Location::recreate_context(source, location);
+
+    for (i, l) in contextual_lines(source, line, 3) {
+        writeln!(f, "{}", l)?;
+
+        // line is 1-indexed, i is 0-indexed
+        let indent = column - 1;
+        if i == line - 1 {
+            writeln!(f, "{:indent$}^-- {}", "", msg)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn contextual_lines(
+    text: &str,
+    line: usize,
+    n_lines: usize,
+) -> impl Iterator<Item = (usize, &str)> {
+    let start = line - n_lines;
+    let end = line + n_lines;
+    let skip = start.max(0);
+
+    text.lines()
+        .enumerate()
+        .map(|(i, line)| (i, line))
+        .skip(skip)
+        .take(end - start)
+}
+
 #[derive(Debug)]
 pub struct Tabol<'a> {
     table_map: HashMap<&'a str, Table<'a>>,
 }
 
 impl<'a> Tabol<'a> {
-    pub fn new(table_definitions: &'a str) -> Result<Self, TableError> {
+    pub fn new(table_definitions: &'static str) -> Result<Self, TableError<'a>> {
         let mut table_map = HashMap::new();
-        let (_, tables) = nom_parser::parse_tables(table_definitions).map_err(|e| {
-            // TODO: better error handling, convert nom errors to TableError
-            // nom has some pretty bad errors, maybe use nom-supreme?
-            TableError::ParseError(format!(
-                "failed to parse table definitions: {}",
-                convert_error(table_definitions, e)
-            ))
-        })?;
+        let tables = nom_parser::parse_tables(table_definitions)
+            .map_err(|e| TableError::ParseError(table_definitions, e))?;
 
         for table in tables {
             table_map.insert(table.id, table);
@@ -98,7 +149,9 @@ pub struct Table<'a> {
 }
 
 impl<'a> Table<'a> {
-    pub fn new(title: &'a str, id: &'a str, rules: Vec<Rule<'a>>, weights: Vec<f32>) -> Self {
+    pub fn new(title: &'a str, id: &'a str, rules: Vec<Rule<'a>>) -> Self {
+        let weights: Vec<f32> = rules.iter().map(|rule| rule.weight).collect();
+
         Self {
             title,
             id,
@@ -108,7 +161,7 @@ impl<'a> Table<'a> {
         }
     }
 
-    pub fn gen(&self, tables: &Tabol) -> Result<String, TableError> {
+    pub fn gen(&self, tables: &'a Tabol) -> Result<String, TableError> {
         let mut rng = rand::thread_rng();
         let rule = &self.rules[self.distribution.sample(&mut rng)];
 
@@ -123,12 +176,12 @@ pub struct Rule<'a> {
     pub parts: Vec<RuleInst<'a>>,
 }
 
-impl Rule<'_> {
-    pub fn resolve(&self, tables: &Tabol) -> Result<String, TableError> {
+impl<'a> Rule<'a> {
+    pub fn resolve(&self, tables: &'a Tabol) -> Result<String, TableError<'a>> {
         // keep track of context
         // forward pass to resolve all interpolations
         // backwards pass to resolve built-ins (e.g. article)
-        let resolved: Result<Vec<String>, TableError> = self
+        let resolved: Result<Vec<String>, TableError<'a>> = self
             .parts
             .iter()
             .map(|part| match part {
