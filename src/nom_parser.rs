@@ -12,10 +12,10 @@ use nom_supreme::{error::ErrorTree, tag::complete::tag};
 use nom_supreme::{final_parser::final_parser, parser_ext::ParserExt};
 use std::collections::HashMap;
 
-use crate::tabol::{FilterOp, Rule, RuleInst, Table};
+use crate::tabol::{FilterOp, Rule, RuleInst, TableDefinition};
 
 // --------- Tabol ---------
-pub fn parse_tables(input: &str) -> Result<Vec<Table>, ErrorTree<&str>> {
+pub fn parse_tables(input: &str) -> Result<Vec<TableDefinition>, ErrorTree<&str>> {
     final_parser(many1(table))(input)
 }
 
@@ -31,10 +31,10 @@ pub fn parse_tables(input: &str) -> Result<Vec<Table>, ErrorTree<&str>> {
  *   └───────────────────┘
  *
  */
-fn table(input: &str) -> IResult<&str, Table<'_>, ErrorTree<&str>> {
+fn table(input: &str) -> IResult<&str, TableDefinition<'_>, ErrorTree<&str>> {
     tuple((frontmatter, rules))
         .context("Invalid table definition")
-        .map(|(frontmatter, rules)| Table::new(frontmatter.title, frontmatter.id, rules))
+        .map(|(frontmatter, rules)| TableDefinition::new(frontmatter.title, frontmatter.id, rules))
         .parse(input)
 }
 

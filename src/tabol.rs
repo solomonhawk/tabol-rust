@@ -10,18 +10,18 @@ use crate::nom_parser;
 type TableId<'a> = &'a str;
 
 #[derive(Debug)]
-pub enum TableError<'a> {
+pub enum TableError {
     ParseError(
-        &'a str,
+        String,
         GenericErrorTree<&'static str, &'static str, &'static str, Box<dyn Error + Send + Sync>>,
     ),
     InvalidDefinition(String),
     CallError(String),
 }
 
-impl<'a> Error for TableError<'a> {}
+impl Error for TableError {}
 
-impl<'a> fmt::Display for TableError<'a> {
+impl<'a> fmt::Display for TableError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             TableError::ParseError(source, e) => {
@@ -90,14 +90,14 @@ fn contextual_lines(
 
 #[derive(Debug)]
 pub struct Tabol<'a> {
-    table_map: HashMap<&'a str, Table<'a>>,
+    table_map: HashMap<&'a str, TableDefinition<'a>>,
 }
 
 impl<'a> Tabol<'a> {
-    pub fn new(table_definitions: &'static str) -> Result<Self, TableError<'a>> {
+    pub fn new(table_definitions: &'static str) -> Result<Self, TableError> {
         let mut table_map = HashMap::new();
         let tables = nom_parser::parse_tables(table_definitions)
-            .map_err(|e| TableError::ParseError(table_definitions, e))?;
+            .map_err(|e| TableError::ParseError(table_definitions.to_string(), e))?;
 
         for table in tables {
             table_map.insert(table.id, table);
@@ -108,12 +108,12 @@ impl<'a> Tabol<'a> {
         tabol.validate_tables()
     }
 
-    fn validate_tables(self) -> Result<Self, TableError<'a>> {
+    fn validate_tables(self) -> Result<Self, TableError> {
         for (table_id, table) in self.table_map.iter() {
             for rule in table.rules.iter() {
                 if let Err(err) = rule.resolve(&self) {
                     return Err(TableError::InvalidDefinition(format!(
-                        "in table '{}' for rule '{}'. Original error: {}",
+                        "in table \"{}\" for rule \"{}\". Original error: \"{}\"",
                         table_id, rule.raw, err
                     )));
                 }
@@ -127,41 +127,34 @@ impl<'a> Tabol<'a> {
         self.table_map.keys().copied().collect()
     }
 
-    pub fn contains_table(&self, table_name: &str) -> bool {
-        self.table_map.contains_key(table_name)
-    }
-
     pub fn gen(&self, id: &str) -> Result<String, TableError> {
-        if let Some(table) = self.table_map.get(id) {
-            return table.gen(self);
-        }
-
-        Err(TableError::CallError(format!(
-            "No table found with id {}",
-            id
-        )))
+        self.table_map
+            .get(id)
+            .ok_or(TableError::CallError(format!(
+                "No table found with id {}",
+                id
+            )))
+            .and_then(|table| table.gen(self))
     }
 
     pub fn gen_many(&self, id: &str, count: u8) -> Result<Vec<String>, TableError> {
-        if let Some(table) = self.table_map.get(id) {
-            let mut results = Vec::with_capacity(count as usize);
-
-            for _ in 0..count {
-                results.push(table.gen(self));
-            }
-
-            return results.into_iter().collect();
-        }
-
-        Err(TableError::CallError(format!(
+        let table = self.table_map.get(id).ok_or(TableError::CallError(format!(
             "No table found with id {}",
             id
-        )))
+        )))?;
+
+        let mut results = Vec::with_capacity(count as usize);
+
+        for _ in 0..count {
+            results.push(table.gen(self)?);
+        }
+
+        Ok(results)
     }
 }
 
 #[derive(Debug)]
-pub struct Table<'a> {
+pub struct TableDefinition<'a> {
     pub title: &'a str,
     pub id: TableId<'a>,
     pub rules: Vec<Rule<'a>>,
@@ -169,7 +162,7 @@ pub struct Table<'a> {
     pub distribution: WeightedIndex<f32>,
 }
 
-impl<'a> Table<'a> {
+impl<'a> TableDefinition<'a> {
     pub fn new(title: &'a str, id: &'a str, rules: Vec<Rule<'a>>) -> Self {
         let weights: Vec<f32> = rules.iter().map(|rule| rule.weight).collect();
 
@@ -198,11 +191,11 @@ pub struct Rule<'a> {
 }
 
 impl<'a> Rule<'a> {
-    pub fn resolve(&self, tables: &'a Tabol) -> Result<String, TableError<'a>> {
+    pub fn resolve(&self, tables: &'a Tabol) -> Result<String, TableError> {
         // keep track of context
         // forward pass to resolve all interpolations
         // backwards pass to resolve built-ins (e.g. article)
-        let resolved: Result<Vec<String>, TableError<'a>> = self
+        let resolved: Result<Vec<String>, TableError> = self
             .parts
             .iter()
             .map(|part| match part {
