@@ -21,7 +21,7 @@ pub enum TableError {
 
 impl Error for TableError {}
 
-impl<'a> fmt::Display for TableError {
+impl fmt::Display for TableError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             TableError::ParseError(source, e) => {
@@ -138,6 +138,8 @@ impl<'a> Tabol<'a> {
     }
 
     pub fn gen_many(&self, id: &str, count: u8) -> Result<Vec<String>, TableError> {
+        info!("Generating {count} results for table \"{id}\"");
+
         let table = self.table_map.get(id).ok_or(TableError::CallError(format!(
             "No table found with id {}",
             id
