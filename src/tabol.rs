@@ -85,11 +85,7 @@ fn contextual_lines(
     let end = line + n_lines;
     let skip = start.max(0);
 
-    text.lines()
-        .enumerate()
-        .map(|(i, line)| (i, line))
-        .skip(skip)
-        .take(end - start)
+    text.lines().enumerate().skip(skip).take(end - start)
 }
 
 #[derive(Debug)]
@@ -131,6 +127,10 @@ impl<'a> Tabol<'a> {
         self.table_map.keys().copied().collect()
     }
 
+    pub fn contains_table(&self, table_name: &str) -> bool {
+        self.table_map.contains_key(table_name)
+    }
+
     pub fn gen(&self, id: &str) -> Result<String, TableError> {
         if let Some(table) = self.table_map.get(id) {
             return table.gen(self);
@@ -142,9 +142,9 @@ impl<'a> Tabol<'a> {
         )))
     }
 
-    pub fn gen_many(&self, id: &str, count: usize) -> Result<Vec<String>, TableError> {
+    pub fn gen_many(&self, id: &str, count: u8) -> Result<Vec<String>, TableError> {
         if let Some(table) = self.table_map.get(id) {
-            let mut results = Vec::with_capacity(count);
+            let mut results = Vec::with_capacity(count as usize);
 
             for _ in 0..count {
                 results.push(table.gen(self));

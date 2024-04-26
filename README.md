@@ -4,7 +4,7 @@ This is a work in progress parser/generator of random tables using Rust and `nom
 
 Table definitions look like the following (entries can refer to other tables using `{{table_name}}`):
 
-```
+```yml
 ---
 title: Colors
 id: color
@@ -30,7 +30,7 @@ id: colored_shape
 
 Entry frequency can be adjusted by specifying a different weight for some rows:
 
-```
+```yml
 ---
 title: Variable Frequency
 id: variable_frequency
@@ -43,6 +43,14 @@ id: variable_frequency
 1: mythic
 ```
 
+## CLI
+| Flag | Description |
+|-|-|
+| `-d`, `--definition` | the file name of the `.tbl` file in the `src/tables` folder to use |
+| `-t`, `--table` | the name of the table within the definition to generate variants for |
+| `-c`, `--count` | (default 10): how many to generate |
+| `--debug` | turn on debug logging |
+
 ## TODO
 - [ ] optional interpolations?
 - [ ] built-ins
@@ -52,9 +60,9 @@ id: variable_frequency
 - [x] consider switching to weights instead of numeric indices - easier to adjust frequency
 - [ ] some kind of UI?
 - [ ] wasm build
-- [ ] CLI with clap
-  - [ ] load .tbl from file
-  - [ ] execute some gen/gen_many command
+- [x] CLI with clap
+  - [x] load .tbl from file
+  - [x] execute some gen/gen_many command
   - [ ] interactive? (browse tables, issue multiple gen commands, history)
 - [ ] versioning (version in frontmatter)
   - [ ] versioned parsers
